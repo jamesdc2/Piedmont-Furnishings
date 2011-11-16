@@ -1,0 +1,13 @@
+
+
+<!ELEMENT SalesReport (Order*)>
+<!ELEMENT Order (OrderNum,CustomerID,AgentID,Date,Status,ItemNum,Quantity,Price,Total)>
+<!ELEMENT OrderNum (#PCDATA)>
+<!ELEMENT CustomerID (#PCDATA)>
+<!ELEMENT AgentID (#PCDATA)>
+<!ELEMENT Date (#PCDATA)>
+<!ELEMENT Status (#PCDATA)>
+<!ELEMENT ItemNum (#PCDATA)>
+<!ELEMENT Quantity (#PCDATA)>
+<!ELEMENT Price (#PCDATA)>
+<!ELEMENT Total (#PCDATA)>

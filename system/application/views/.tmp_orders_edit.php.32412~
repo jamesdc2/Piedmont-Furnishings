@@ -1,0 +1,208 @@
+<script type="text/javascript">
+	
+	$(document).ready( function() {
+		
+		var count = <?php echo ($order_items->num_rows() + 1); ?>;
+		
+		$(".delete").live("click", function(event){
+			$(this).parent().parent().remove();
+		});
+		
+		$(".add").live("click", function(event) {
+			
+			var newRow = "<tr><td class='entry_cell'><select name='od_product_@@'><option value='BB501'>Shaker Bedframe</option><option value='BB602'>Classic Bedframe</option><option value='BB603'>Oak Bedframe</option><option value='BC501'>Shaker Chest</option><option value='BC602'>Classic Chest</option><option value='BC603'>Oak Chest</option><option value='BW501'>Shaker Wardrobe</option><option value='DB301'>Shaker Buffet</option><option value='DB302'>Classic Buffet</option><option value='DC301A'>Shaker Chair - arm</option><option value='DC301B'>Shaker Chair - no arm</option><option value='DC302A'>Classic Chair - arm</option><option value='DC302B'>Classic Chair - no arm</option><option value='DT301'>Shaker Table</option><option value='DT302'>Classic Table</option><option value='LB101'>Shaker Bookshelf</option><option value='LB202'>Classic Bookshelf</option><option value='LE101'>Shaker Entertainment Center</option><option value='LE202'>Classic Entertainment Center</option><option value='LE203'>Oak Entertainment Center</option></select></td><td class='entry_cell'><input type='text' size='7' name='od_quantity_@@'/></td><td class='entry_cell'><input type='text' size='10' name='od_unit_price_@@'/></td><td class='entry_cell'><input type='text' size='10' name='od_total_price_@@'/></td><td class='entry_cell'><a onclick='return false;' class='add' href=''>+</a> / <a onclick='return false;' class='delete' href=''>-</a></td></tr>";
+			newRow = newRow.replace(/@@/g, count);
+			$("#product_info tr:last").after(newRow);
+			count++;				
+		});
+	});
+	
+	var error;
+	var alertmsg;
+	var pattern;
+	
+	function checkAll() {
+
+		error = false;
+		alertmsg = "";
+				
+		var dateField = document.getElementById("order_date");
+		var quanArr = document.getElementsByClassName("quantity");
+		var priceArr = document.getElementsByClassName("price");
+		
+		checkDate(dateField);
+		
+		var i;
+		for( i = 0; i < priceArr.length; i++) {
+			checkPrice(priceArr[i]);
+		}
+		
+		for ( i = 0; i < quanArr.length; i++) {
+			checkQuantity(quanArr[i]);
+		}				
+		
+		if (error == true) {
+			document.getElementById("errorbox").innerHTML = "<p>" + alertmsg + "</p>";
+			return false;
+		}
+		else {
+			document.getElementById("errorbox").InnerHTML = "";
+			return true;
+		}
+		
+	};
+	
+	function checkDate(field) {
+		pattern = /\d\d\d\d\-\d\d\-\d\d/;
+		if(pattern.test(field.value) == false) {
+			alertmsg += "Please enter the date in a YYYY-MM-DD format<br>";
+			error = true;
+		}					
+	};
+	
+	function checkQuantity(field) {
+		pattern = /\D/;
+		if(pattern.test(field.value) == true ) {
+			alertmsg += "A quantity has been entered incorrectly<br>";
+			error = true;
+		}
+	};
+	
+	function checkPrice(field) {
+		pattern = /\d+\.\d\d/;
+		if(pattern.test(field.value) == false ) {
+			alert(field.value);
+			alertmsg += "A price has been entered incorrectly.<br>"
+			error = true;
+		}
+	}
+    
+</script>
+	<h2>Edit Order</h2>
+	<form method="post" action="<?php echo wp ?>index.php/orders/done" class="order_form no_table_borders" onsubmit="return checkAll();" language="javascript">
+		<div class="form-padding">
+			<label class="line-below">Order Information</label>
+			<table border="0px" cellpadding="0px" cellspacing="0px">
+				<tr>
+					<input type="hidden" name="order_num" value="<?php echo $entry['order_id']; ?>" size="10" READONLY/>
+					<td><label>Order Date:</label></td>
+					<td><input type="text" id="order_date" name="order_date" value="<?php echo $entry['order_date']; ?>" size="10" /></td>
+				</tr>
+				<tr>
+					<td><label>Customer:</label></td>
+					<td colspan="3">
+						<select name="customer">
+						<?php foreach($cust_list->result() as $customer) {
+							echo '<option';
+							echo ' value="' . $customer->cust_id . '" ';
+							if( $entry['cust_fname'] === $customer->cust_fname && $entry['cust_lname'] === $customer->cust_lname)
+								echo 'selected="selected" >';
+							else 
+								echo '>';								
+							echo $customer->cust_fname . ' ' . $customer->cust_lname . "</option>";
+						} ?>
+					 </select>
+					</td>
+				</tr>
+				<tr>
+					<td><label>Sales Agent:</label></td>
+					<td>
+						<select name="sales_agent">
+						<?php foreach($emp_list->result() as $employee) {
+							echo '<option';
+							echo ' value="' . $employee->emp_id . '" ';						
+							if( $entry['emp_fname'] === $employee->emp_fname && $entry['emp_lname'] === $employee->emp_lname)
+								echo ' selected="selected" >';
+							else
+								echo '>';
+							echo $employee->emp_fname . ' ' . $employee->emp_lname . "</option>";
+						} ?>
+					
+					</td>
+					<td><label>Order Status:</label></td>
+					<td>
+						<select name="order_status">
+					<?php foreach($order_status->result() as $status_entry) {
+						echo '<option';
+						echo ' value="' . $status_entry->status_id . '" ';
+						if( $entry['status_type'] == $status_entry->status_type)
+							echo ' selected="selected" >';
+						else
+							echo '>';
+						echo $status_entry->status_type . "</option>";
+					} ?>
+					</select>
+						
+					</td>
+				</tr>	
+			</table>
+			<label class="line-below">Product Information</label>
+			<table border="0" cellpadding="0" cellspacing="0" id="product_info">
+            <thead>
+                <tr>
+                    <th>
+                        Product
+                    </th>
+                    <th>
+                        Qty.
+                    </th>
+                    <th>
+                        Unit Price
+                    </th>
+                    <th>
+                        Total Price
+                    </th>
+                    <th>
+                    </th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th colspan="3">
+                        <label style="float: right;">
+                            Total Order:
+                        </label>
+                    </th>
+                    <td class="entry_cell">
+                        <input type="text" class="price" name="total_order" size="10" />
+                    </td>
+                </tr>
+            </tfoot>
+            <tbody>
+            	<?php foreach($order_items->result() as $item) {
+                echo '<tr>';
+                    echo'<td class="entry_cell">';
+                        echo '<select name="od_product_'. $item->item_linenum . '" />';
+								foreach($product_names->result() as $entry) {
+									echo '<option value="'.$entry->product_id.'"';
+									if( $entry->product_name == $item->product_name)
+										echo 'selected="selected">';
+									else
+										echo '>';
+									echo $entry->product_name;
+									echo '</option>';
+								}
+						echo '</select>';
+                    echo '</td>';
+                    echo '<td class="entry_cell">';
+                        echo '<input type="text" class="quantity" style="text-align:right;" name="od_quantity_'. $item->item_linenum . '" value="' . $item->item_quantity . '" size="7" />';
+                    echo '</td>';
+                    echo '<td class="entry_cell">';
+                        echo '<input type="text" class="price" style="text-align:right;" name="od_unit_price_'. $item->item_linenum . '" value="' . number_format($item->item_unitprice,2) . '" size="10" />';
+                    echo '</td>';
+                    echo '<td class="entry_cell">';
+                        echo '<input type="text" class="price" style="text-align:right;" name="od_total_price_'. $item->item_linenum . '" size="10" value="' . number_format($item->item_quantity * $item->item_unitprice,2) . '" />';
+                    echo '</td>';
+                    echo '<td class="entry_cell">';
+                        echo '<a href="" class="add" onclick="return false">+</a> / <a href="" class="delete" onclick="return false">-</a>';
+                    echo '</td>';
+                echo '</tr>';
+				} ?>
+            </tbody>
+        </table>
+			<input type="submit" value="Submit Changes" style="margin: 10px;" class="button" />
+			<input type="button" onclick="reset(); return false" value="Reset Form" style="margin: 10px;" class="button"/>
+		</div>
+	</form>
+	<div id="errorbox" style="border: 1px solid #EAE7DB; background: #FAFAE7; color: red; margin: 10px;"></div>
+
